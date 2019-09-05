@@ -19,7 +19,7 @@ import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.util.ObjectHelper;
 
 /**
- * The aws-sqs component is used for sending and receiving messages to Amazon's SQS service.
+ * The aws-iot-data component is used for publishing messages to AWS IoT Core
  */
 @UriEndpoint(firstVersion = "2.6.0", scheme = "aws-iot-data", title = "AWS IoT Producer", syntax = "aws-iot-data",
     label = "cloud,messaging")
@@ -86,8 +86,9 @@ public class IotEndpoint extends DefaultEndpoint {
 
     /**
      * Provide the possibility to override this method for an mock implementation
-     * @return AmazonSQSClient
-     */
+     * @return AWSIotData
+     **/
+
     AWSIotData createClient() {
         AWSIotData client = null;
         AWSIotDataClientBuilder clientBuilder = null;
@@ -109,9 +110,9 @@ public class IotEndpoint extends DefaultEndpoint {
             }
         } else {
             if (isClientConfigFound) {
-                clientBuilder = AWSIotDataClientBuilder.standard();
-            } else {
                 clientBuilder = AWSIotDataClientBuilder.standard().withClientConfiguration(clientConfiguration);
+            } else {
+                clientBuilder = AWSIotDataClientBuilder.standard();
             }
         }
         if (ObjectHelper.isNotEmpty(configuration.getRegion())) {

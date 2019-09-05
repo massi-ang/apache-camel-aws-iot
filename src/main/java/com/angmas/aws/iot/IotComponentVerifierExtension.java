@@ -27,6 +27,8 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.iotdata.AWSIotData;
 import com.amazonaws.services.iotdata.AWSIotDataClientBuilder;
 
+import com.amazonaws.services.iotdata.model.PublishRequest;
+import com.amazonaws.services.iotdata.model.PublishResult;
 import org.apache.camel.component.extension.verifier.DefaultComponentVerifierExtension;
 import org.apache.camel.component.extension.verifier.ResultBuilder;
 import org.apache.camel.component.extension.verifier.ResultErrorBuilder;
@@ -69,9 +71,16 @@ public class IotComponentVerifierExtension extends DefaultComponentVerifierExten
 
         try {
             IotConfiguration configuration = setProperties(new IotConfiguration(), parameters);
-            AWSCredentials credentials = new BasicAWSCredentials(configuration.getAccessKey(), configuration.getSecretKey());
-            AWSCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials);
-            AWSIotData client = AWSIotDataClientBuilder.standard().withCredentials(credentialsProvider).withRegion(Regions.valueOf(configuration.getRegion())).build();
+
+            AWSIotData client = configuration.getAwsIotClient();
+            PublishRequest req = new PublishRequest();
+            req.setQos(0);
+            req.setTopic("test");
+            PublishResult res = client.publish(req);
+            if (res.getSdkHttpMetadata().getHttpStatusCode() != 200) {
+                ResultErrorBuilder errorBuilder = ResultErrorBuilder.withCodeAndDescription(VerificationError.StandardCode.AUTHENTICATION, "invalid credentials");
+                builder.error(errorBuilder.build());
+            }
         } catch (SdkClientException e) {
             ResultErrorBuilder errorBuilder = ResultErrorBuilder.withCodeAndDescription(VerificationError.StandardCode.AUTHENTICATION, e.getMessage())
                 .detail("aws_iot_exception_message", e.getMessage()).detail(VerificationError.ExceptionAttribute.EXCEPTION_CLASS, e.getClass().getName())

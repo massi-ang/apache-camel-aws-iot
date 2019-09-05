@@ -8,7 +8,8 @@ import org.apache.camel.spi.UriParams;
 
 @UriParams
 public class IotConfiguration implements Cloneable {
-
+    public static final String PUBLISH_QOS = "CamelAWSIotQos";
+    public static final String PUBLISH_TOPIC = "CamelAWSIotTopic";
     // common properties
     @UriParam
     private AWSIotData awsIotClient;
@@ -135,6 +136,9 @@ public class IotConfiguration implements Cloneable {
     }
 
     public void setRegion(String region) {
+        if (region != null) {
+            region = region.toUpperCase();
+        }
         this.region = region;
     }
 }

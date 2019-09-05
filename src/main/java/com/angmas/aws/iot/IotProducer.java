@@ -31,8 +31,8 @@ import org.apache.camel.support.DefaultProducer;
 import org.apache.camel.util.URISupport;
 
 /**
- * A Producer which sends messages to the Amazon Web Service Simple Queue
- * Service <a href="http://aws.amazon.com/sqs/">AWS SQS</a>
+ * A Producer which pubishes messages to the Amazon Web Service IoT Core
+ * Service <a href="http://aws.amazon.com/iot/">AWS IoT core</a>
  */
 public class IotProducer extends DefaultProducer {
 
@@ -46,14 +46,19 @@ public class IotProducer extends DefaultProducer {
         processSingleMessage(exchange);
     }
 
-    public void processSingleMessage(final Exchange exchange) {
+    protected void processSingleMessage(final Exchange exchange) {
         ByteBuffer body = exchange.getIn().getBody(ByteBuffer.class);
         PublishRequest request = new PublishRequest();
         log.trace("Body: {}", body.toString());
         log.trace(exchange.getIn().getHeaders().toString());
         request.setPayload(body);
-        request.setQos((Integer)exchange.getIn().getHeader("qos"));
-        request.setTopic((String)exchange.getIn().getHeader("topic"));
+        Integer qos = (Integer)exchange.getIn().getHeader(IotConfiguration.PUBLISH_QOS, getConfiguration().getQos());
+        String topic = (String)exchange.getIn().getHeader(IotConfiguration.PUBLISH_TOPIC, getConfiguration().getTopic());
+        if (qos == null || !(qos == 0 || qos == 1) || topic == null || topic.length() == 0 || topic.length()>256) {
+            throw new IllegalArgumentException("topic and qos must be specified and be valid");
+        }
+        request.setQos(qos);
+        request.setTopic(topic);
         log.trace("Sending request [{}] from exchange [{}]...", request, exchange);
 
         PublishResult result = getClient().publish(request);
@@ -84,11 +89,6 @@ public class IotProducer extends DefaultProducer {
 
 
     public static Message getMessageForResponse(final Exchange exchange) {
-        if (exchange.getPattern().isOutCapable()) {
-            Message out = exchange.getOut();
-            out.copyFrom(exchange.getIn());
-            return out;
-        }
         return exchange.getIn();
     }
 

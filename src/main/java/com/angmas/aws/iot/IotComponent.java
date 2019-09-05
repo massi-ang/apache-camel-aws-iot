@@ -81,7 +81,7 @@ public class IotComponent extends DefaultComponent {
     }
 
     /**
-     * The AWS SQS default configuration
+     * The AWS Iot Data default configuration
      */
     public void setConfiguration(IotConfiguration configuration) {
         this.configuration = configuration;
@@ -114,7 +114,7 @@ public class IotComponent extends DefaultComponent {
     }
 
     /**
-     * Specify the queue region which could be used with queueOwnerAWSAccountId to build the service URL.
+     * Specify the region to connect to
      */
     public void setRegion(String region) {
         configuration.setRegion(region);
